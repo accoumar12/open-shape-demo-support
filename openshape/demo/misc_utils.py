@@ -128,6 +128,13 @@ def input_3d_shape():
         pc[:, :3] = pc[:, :3] / numpy.linalg.norm(pc[:, :3], axis=-1).max()
         if pc.shape[1] == 3:
             pc = numpy.concatenate([pc, numpy.ones_like(pc)], axis=-1)
+        prog.progress(0.27, "Normalized Point Cloud")
+        if pc.shape[0] > 10000:
+            pc = pc[numpy.random.permutation(len(pc))[:10000]]
+        elif pc.shape[0] == 0:
+            raise ValueError("Got empty point cloud!")
+        elif pc.shape[0] < 10000:
+            pc = numpy.concatenate([pc, pc[numpy.random.randint(len(pc), size=[10000 - len(pc)])]])
         prog.progress(0.3, "Preprocessed Point Cloud")
         return pc.astype(f32)
 
