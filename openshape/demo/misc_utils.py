@@ -99,10 +99,17 @@ def trimesh_to_pc(scene_or_mesh):
 
 
 def input_3d_shape(key=None):
-    objaid = st.text_input("Enter an Objaverse ID", key=key)
-    model = st.file_uploader("Or upload a model (.glb/.obj/.ply)", key=key)
-    npy = st.file_uploader("Or upload a point cloud numpy array (.npy of Nx3 XYZ or Nx6 XYZRGB)", key=key)
-    swap_yz_axes = st.checkbox("Swap Y/Z axes of input (Y is up for OpenShape)", key=key)
+    if key is None:
+        objaid_key = model_key = npy_key = swap_key = None
+    else:
+        objaid_key = key + "_objaid"
+        model_key = key + "_model"
+        npy_key = key + "_npy"
+        swap_key = key + "_swap"
+    objaid = st.text_input("Enter an Objaverse ID", key=objaid_key)
+    model = st.file_uploader("Or upload a model (.glb/.obj/.ply)", key=model_key)
+    npy = st.file_uploader("Or upload a point cloud numpy array (.npy of Nx3 XYZ or Nx6 XYZRGB)", key=npy_key)
+    swap_yz_axes = st.checkbox("Swap Y/Z axes of input (Y is up for OpenShape)", key=swap_key)
     f32 = numpy.float32
 
     def load_data(prog):
