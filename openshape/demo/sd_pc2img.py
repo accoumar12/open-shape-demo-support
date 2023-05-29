@@ -13,8 +13,10 @@ class Wrapper(transformers.modeling_utils.PreTrainedModel):
         return rst.ObjectProxy(image_embeds=x)
 
 
+half = torch.float16 if torch.cuda.is_available() else torch.bfloat16
 pipe = StableUnCLIPImg2ImgPipeline.from_pretrained(
     "diffusers/stable-diffusion-2-1-unclip-i2i-l",
+    torch_dtype=half, variation="fp16",
     image_encoder = Wrapper()
 )
 if torch.cuda.is_available():
