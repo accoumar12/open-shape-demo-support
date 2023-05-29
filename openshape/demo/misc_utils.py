@@ -98,11 +98,11 @@ def trimesh_to_pc(scene_or_mesh):
         return model_to_pc(scene_or_mesh, 10000)
 
 
-def input_3d_shape():
-    objaid = st.text_input("Enter an Objaverse ID")
-    model = st.file_uploader("Or upload a model (.glb/.obj/.ply)")
-    npy = st.file_uploader("Or upload a point cloud numpy array (.npy of Nx3 XYZ or Nx6 XYZRGB)")
-    swap_yz_axes = st.checkbox("Swap Y/Z axes of input (Y is up for OpenShape)")
+def input_3d_shape(key=None):
+    objaid = st.text_input("Enter an Objaverse ID", key=key)
+    model = st.file_uploader("Or upload a model (.glb/.obj/.ply)", key=key)
+    npy = st.file_uploader("Or upload a point cloud numpy array (.npy of Nx3 XYZ or Nx6 XYZRGB)", key=key)
+    swap_yz_axes = st.checkbox("Swap Y/Z axes of input (Y is up for OpenShape)", key=key)
     f32 = numpy.float32
 
     def load_data(prog):
@@ -122,12 +122,13 @@ def input_3d_shape():
         prog.progress(0.25, "Preprocessing Point Cloud")
         assert pc.ndim == 2, "invalid pc shape: ndim = %d != 2" % pc.ndim
         assert pc.shape[1] in [3, 6], "invalid pc shape: should have 3/6 channels, got %d" % pc.shape[1]
+        pc = pc.astype(f32)
         if swap_yz_axes:
             pc[:, [1, 2]] = pc[:, [2, 1]]
         pc[:, :3] = pc[:, :3] - numpy.mean(pc[:, :3], axis=0)
         pc[:, :3] = pc[:, :3] / numpy.linalg.norm(pc[:, :3], axis=-1).max()
         if pc.shape[1] == 3:
-            pc = numpy.concatenate([pc, numpy.ones_like(pc)], axis=-1)
+            pc = numpy.concatenate([pc, numpy.ones_like(pc) * 0.4], axis=-1)
         prog.progress(0.27, "Normalized Point Cloud")
         if pc.shape[0] > 10000:
             pc = pc[numpy.random.permutation(len(pc))[:10000]]

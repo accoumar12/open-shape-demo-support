@@ -27,7 +27,7 @@ def pc_to_image(pc_encoder: torch.nn.Module, pc, prompt, noise_level, width, hei
     ref_dev = next(pc_encoder.parameters()).device
     enc = pc_encoder(torch.tensor(pc.T[None], device=ref_dev))
     return pipe(
-        prompt="best quality, super high resolution, " + prompt,
+        prompt=', '.join(["best quality", "super high resolution"] + ([prompt] if prompt else [])),
         negative_prompt="cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry",
         image=torch.nn.functional.normalize(enc, dim=-1) * (768 ** 0.5) / 2,
         width=width, height=height,
