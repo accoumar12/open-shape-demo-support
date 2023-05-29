@@ -109,7 +109,7 @@ def input_3d_shape(key=None):
     objaid = st.text_input("Enter an Objaverse ID", key=objaid_key)
     model = st.file_uploader("Or upload a model (.glb/.obj/.ply)", key=model_key)
     npy = st.file_uploader("Or upload a point cloud numpy array (.npy of Nx3 XYZ or Nx6 XYZRGB)", key=npy_key)
-    swap_yz_axes = st.checkbox("Swap Y/Z axes of input (Y is up for OpenShape)", key=swap_key)
+    swap_yz_axes = st.radio("Gravity", ["Y is up (for most Objaverse shapes)", "Z is up"], key=swap_key) == "Z is up"
     f32 = numpy.float32
 
     def load_data(prog):

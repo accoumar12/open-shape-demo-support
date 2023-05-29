@@ -13,25 +13,33 @@ class Wrapper(transformers.modeling_utils.PreTrainedModel):
         return rst.ObjectProxy(image_embeds=x)
 
 
-half = torch.float16 if torch.cuda.is_available() else torch.bfloat16
 pipe = StableUnCLIPImg2ImgPipeline.from_pretrained(
     "diffusers/stable-diffusion-2-1-unclip-i2i-l",
-    torch_dtype=half, variant="fp16",
+    # variant="fp16",
     image_encoder = Wrapper()
 )
+# pe = pipe.text_encoder.text_model.embeddings
+# pe.position_ids = torch.arange(pe.position_ids.shape[-1]).expand((1, -1)).to(pe.position_ids)  # workaround
 if torch.cuda.is_available():
     pipe = pipe.to('cuda:' + str(torch.cuda.current_device()))
     pipe.enable_model_cpu_offload(torch.cuda.current_device())
+pipe.enable_attention_slicing()
+pipe.enable_vae_slicing()
 
 
 @torch.no_grad()
 def pc_to_image(pc_encoder: torch.nn.Module, pc, prompt, noise_level, width, height, cfg_scale, num_steps, callback):
     ref_dev = next(pc_encoder.parameters()).device
     enc = pc_encoder(torch.tensor(pc.T[None], device=ref_dev))
+    enc = torch.nn.functional.normalize(enc, dim=-1) * (768 ** 0.5) / 2
+    if torch.cuda.is_available():
+        enc = enc.to('cuda:' + str(torch.cuda.current_device()))
+    # enc = enc.type(half)
+    # with torch.autocast("cuda"):
     return pipe(
-        prompt=', '.join(["best quality", "super high resolution"] + ([prompt] if prompt else [])),
+        prompt=', '.join(["best quality"] + ([prompt] if prompt else [])),
         negative_prompt="cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry",
-        image=torch.nn.functional.normalize(enc, dim=-1) * (768 ** 0.5) / 2,
+        image=enc,
         width=width, height=height,
         guidance_scale=cfg_scale,
         noise_level=noise_level,

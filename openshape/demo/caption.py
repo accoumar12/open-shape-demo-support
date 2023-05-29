@@ -148,6 +148,7 @@ def pc_caption(pc_encoder: torch.nn.Module, pc, cond_scale):
     ref_dev = next(pc_encoder.parameters()).device
     prefix = pc_encoder(torch.tensor(pc.T[None], device=ref_dev))
     prefix = prefix.float() * cond_scale
+    prefix = prefix.to(next(model.parameters()).device)
     prefix_embed = model.clip_project(prefix).reshape(1, prefix_length, -1)
     text = generate2(model, tokenizer, embed=prefix_embed)
     return text
