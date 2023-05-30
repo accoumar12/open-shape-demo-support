@@ -137,7 +137,7 @@ def input_3d_shape(key=None):
         if pc.shape[1] == 3:
             pc = numpy.concatenate([pc, numpy.ones_like(pc) * 0.4], axis=-1)
         prog.progress(0.27, "Normalized Point Cloud")
-        if pc.shape[0] > 10000:
+        if pc.shape[0] >= 10000:
             pc = pc[numpy.random.permutation(len(pc))[:10000]]
         elif pc.shape[0] == 0:
             raise ValueError("Got empty point cloud!")
