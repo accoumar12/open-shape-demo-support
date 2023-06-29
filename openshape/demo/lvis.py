@@ -1111,6 +1111,7 @@ categories = [
     'waffle',
     'waffle_iron',
     'wagon',
+    'wagon_wheel',
     'walking_cane',
     'walking_stick',
     'wall_clock',
