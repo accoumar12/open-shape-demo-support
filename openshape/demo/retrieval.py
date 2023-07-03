@@ -8,13 +8,19 @@ meta = json.load(
     open(hf_hub_download("OpenShape/openshape-objaverse-embeddings", "objaverse_meta.json", token=True, repo_type='dataset'))
 )
 # {
-# "u": "94db219c315742909fee67deeeacae15",
-# "name": "knife", "like": 0, "view": 35,
-# "tags": ["game-ready", "damascus", "damascus_steel", "kabar-knife", "knife", "blender", "blender3d", "gameready"],
-# "cats": ["weapons-military"],
-# "img": "https://media.sketchfab.com/models/94db219c315742909fee67deeeacae15/thumbnails/c0bbbd475d264ff2a92972f5115564ee/0cd28a130ebd4d9c9ef73190f24d9a42.jpeg",
-# "desc": "", "faces": 1724, "size": 11955, "lic": "by",
-# "glb": "glbs/000-000/94db219c315742909fee67deeeacae15.glb"
+#     "u": "94db219c315742909fee67deeeacae15",
+#     "name": "knife",
+#     "like": 0,
+#     "view": 35,
+#     "anims": 0,
+#     "tags": ["game-ready"],
+#     "cats": ["weapons-military"],
+#     "img": "https://media.sketchfab.com/models/94db219c315742909fee67deeeacae15/thumbnails/c0bbbd475d264ff2a92972f5115564ee/0cd28a130ebd4d9c9ef73190f24d9a42.jpeg",
+#     "desc": "",
+#     "faces": 1724,
+#     "size": 11955,
+#     "lic": "by",
+#     "glb": "glbs/000-000/94db219c315742909fee67deeeacae15.glb"
 # }
 meta = {x['u']: x for x in meta['entries']}
 deser = torch.load(
@@ -24,17 +30,20 @@ us = deser['us']
 feats = deser['feats']
 
 
-def retrieve(embedding, top):
+def retrieve(embedding, top, sim_th=0.0, filter_fn=None):
     sims = []
     embedding = F.normalize(embedding.detach().cpu(), dim=-1).squeeze()
     for chunk in torch.split(feats, 10240):
         sims.append(embedding @ F.normalize(chunk.float(), dim=-1).T)
     sims = torch.cat(sims)
-    sims, idx = torch.topk(sims, top * 2)
+    sims, idx = torch.sort(sims, descending=True)
     results = []
     for i, sim in zip(idx, sims):
         if us[i] in meta:
-            results.append(dict(meta[us[i]], sim=sim))
-        if len(results) >= top:
+            if filter_fn is None or filter_fn(meta[us[i]]):
+                results.append(dict(meta[us[i]], sim=sim))
+                if len(results) >= top:
+                    break
+        if sim < sim_th:
             break
     return results
