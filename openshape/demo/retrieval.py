@@ -37,6 +37,9 @@ def retrieve(embedding, top, sim_th=0.0, filter_fn=None):
         sims.append(embedding @ F.normalize(chunk.float(), dim=-1).T)
     sims = torch.cat(sims)
     sims, idx = torch.sort(sims, descending=True)
+    sim_mask = sims > sim_th
+    sims = sims[sim_mask]
+    idx = idx[sim_mask]
     results = []
     for i, sim in zip(idx, sims):
         if us[i] in meta:
@@ -44,6 +47,4 @@ def retrieve(embedding, top, sim_th=0.0, filter_fn=None):
                 results.append(dict(meta[us[i]], sim=sim))
                 if len(results) >= top:
                     break
-        if sim < sim_th:
-            break
     return results
