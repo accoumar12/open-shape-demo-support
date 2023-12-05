@@ -5,7 +5,7 @@ from huggingface_hub import hf_hub_download
 
 
 meta = json.load(
-    open(hf_hub_download("OpenShape/openshape-objaverse-embeddings", "objaverse_meta.json", token=True, repo_type='dataset'))
+    open(hf_hub_download("OpenShape/openshape-objaverse-embeddings", "objaverse_meta.json", repo_type='dataset'))
 )
 # {
 #     "u": "94db219c315742909fee67deeeacae15",
