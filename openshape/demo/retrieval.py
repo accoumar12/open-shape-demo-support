@@ -24,7 +24,7 @@ meta = json.load(
 # }
 meta = {x['u']: x for x in meta['entries']}
 deser = torch.load(
-    hf_hub_download("OpenShape/openshape-objaverse-embeddings", "objaverse.pt", token=True, repo_type='dataset'), map_location='cpu'
+    hf_hub_download("OpenShape/openshape-objaverse-embeddings", "objaverse.pt", repo_type='dataset'), map_location='cpu'
 )
 us = deser['us']
 feats = deser['feats']
