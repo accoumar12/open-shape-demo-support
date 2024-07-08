@@ -1,3 +1,4 @@
+from turtle import forward
 import torch
 import torch.nn as nn
 import torch_redstone as rst
@@ -79,6 +80,9 @@ class Transformer(nn.Module):
             x = ff(x) + x
         return x
 
+class Permute(nn.Module):
+    def forward(self,x):
+        return torch.permute(x, [0, 2, 1])
 
 class PointPatchTransformer(nn.Module):
     def __init__(self, dim, depth, heads, mlp_dim, sa_dim, patches, prad, nsamp, in_dim=3, dim_head=64, rel_pe=False, patch_dropout=0) -> None:
@@ -86,7 +90,7 @@ class PointPatchTransformer(nn.Module):
         self.patches = patches
         self.patch_dropout = patch_dropout
         self.sa = PointNetSetAbstraction(npoint=patches, radius=prad, nsample=nsamp, in_channel=in_dim + 3, mlp=[64, 64, sa_dim], group_all=False)
-        self.lift = nn.Sequential(nn.Conv1d(sa_dim + 3, dim, 1), rst.Lambda(lambda x: torch.permute(x, [0, 2, 1])), nn.LayerNorm([dim]))
+        self.lift = nn.Sequential(nn.Conv1d(sa_dim + 3, dim, 1), Permute(), nn.LayerNorm([dim]))
         self.cls_token = nn.Parameter(torch.randn(dim))
         self.transformer = Transformer(dim, depth, heads, dim_head, mlp_dim, 0.0, rel_pe)
 
